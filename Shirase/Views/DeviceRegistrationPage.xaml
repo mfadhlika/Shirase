@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Shirase.Views.DeviceRegistrationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Shirase.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel MaxWidth="300" VerticalAlignment="Center">
+        <RichTextBlock Margin="0,6,0,6">
+            <Paragraph>
+                Input name for the device
+            </Paragraph>
+        </RichTextBlock>
+        <TextBox x:Name="DeviceNameTextBox" PlaceholderText="Name" Margin="0,6,0,6"/>
+        <ProgressBar x:Name="RegisterProgressBar" Visibility="Collapsed" IsIndeterminate="True"/>
+        <TextBlock x:Name="ErrorTextBlock"/>
+        <Button x:Name="RegisterButton" Margin="0,6,0,6" Click="RegisterButton_Click" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Stretch">Login</Button>
+    </StackPanel>
+</Page>

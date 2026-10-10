@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Shirase (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Shirase (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

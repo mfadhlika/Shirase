@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Shirase.Views.MessagePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Shirase"
+    xmlns:pushovermodel="using:Shirase.Pushover.Models"
+    xmlns:helper="using:Shirase.Views.Helpers"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:sys="using:System"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <CollectionViewSource x:Name="AppCVS" Source="{x:Bind ViewModel.AppLatestMessages}"/>
+        <CollectionViewSource x:Name="MessagesCVS" Source="{x:Bind ViewModel.Messages}"/>
+        <DataTemplate x:Key="AppListNavigationViewTemplate" x:DataType="pushovermodel:Message">
+            <Grid ColumnSpacing="10" RowSpacing="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Source="{x:Bind helper:AppList.Icon(Icon)}" Width="24" Height="24" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Center" />
+                <TextBlock x:Name="AppTextBlock" Text="{x:Bind helper:Formatter.NotificationTitle(Title, App)}" Grid.Row="0" Grid.Column="1" FontWeight="Bold" />
+                <TextBlock Text="{x:Bind helper:Formatter.DateFromTimestamp(Date)}" Grid.Row="0" Grid.Column="2" HorizontalTextAlignment="End" />
+                <TextBlock x:Name="ContentTextBlock" Text="{x:Bind Content}" MaxLines="3" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="MessageListViewTemplate" x:DataType="pushovermodel:Message">
+            <Grid ColumnSpacing="10" RowSpacing="10" Padding="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Source="{x:Bind helper:AppList.Icon(Icon)}" Width="24" Height="24" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top" />
+                <TextBlock x:Name="TitleTextBlock" Text="{x:Bind helper:Formatter.NotificationTitle(Title, App)}" Grid.Row="0" Grid.Column="1" FontWeight="Bold" />
+                <TextBlock Text="{x:Bind helper:Formatter.ISODateFromTimestamp(Date)}" Grid.Row="0" Grid.Column="2" HorizontalTextAlignment="End"/>
+                <TextBlock x:Name="ContentTextBlock" Text="{x:Bind Content}" MaxLines="3" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"/>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <NavigationView x:Name="nvAppList"
+                    IsBackButtonVisible="Collapsed"
+                    IsBackEnabled="False"
+                    MenuItemsSource="{x:Bind AppCVS.View, Mode=OneWay}"
+                    MenuItemTemplate="{StaticResource AppListNavigationViewTemplate}"
+                    SelectionChanged="nvAppList_SelectionChanged"
+                    SelectedItem="{x:Bind ViewModel.SelectedApp, Mode=OneWay}">
+        <SplitView PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+                   IsPaneOpen="True" 
+                   OpenPaneLength="325" 
+                   DisplayMode="Inline" 
+                   PanePlacement="Right">
+            <SplitView.Pane>
+                <StackPanel Orientation="Vertical" Spacing="8" Padding="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8" >
+                        <Image Source="{x:Bind helper:AppList.Icon(ViewModel.SelectedMessage.Icon), Mode=OneWay}" Width="42" Height="42" VerticalAlignment="Top" />
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{x:Bind helper:Formatter.NotificationTitle(ViewModel.SelectedMessage.Title, ViewModel.SelectedMessage.App), Mode=OneWay}"  FontWeight="Bold" />
+                            <TextBlock Text="{x:Bind helper:Formatter.ContentSubtitle(ViewModel.SelectedMessage.App, ViewModel.SelectedMessage.Date), Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <RichTextBlock x:Name="MessageRichTextBlock" 
+                                   helper:MessageContent.HtmlText="{x:Bind ViewModel.SelectedMessage.Content, Mode=OneWay}" />
+                </StackPanel>
+            </SplitView.Pane>
+            <ListView x:Name="MessageListView" 
+                      ItemsSource="{x:Bind MessagesCVS.View, Mode=OneWay}" 
+                      ItemTemplate="{StaticResource MessageListViewTemplate}"
+                      SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectionMode="Single"
+                      Grid.Column="0"/>
+        </SplitView>
+    </NavigationView>
+</Page>
