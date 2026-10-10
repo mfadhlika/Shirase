@@ -9,24 +9,38 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Shirase.ViewModels
 {
     public partial class MessagePageViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<Message> AppLatestMessages { get; set; } = new([new() {
-            App = "Latest Messages"
-        }]);
+        public ObservableCollection<App> AppLatestMessages
+        {
+            get
+            {
+                var query = database.Query<Message>("messages")
+                    .GroupBy("{ App: $.App, Icon: $.Icon }")
+                    .Select("{ Key: @key, Latest: FIRST(SORT(* => @.Date, 'desc'))  }")
+                    .ToEnumerable();
+                ObservableCollection<App> list = [new App("Latest Messages", "pushover", 0, ""), .. query.Select(x => {
+                    var key = x["Key"].AsDocument;
+                    var latest = x["Latest"].AsDocument;
+                    return new App(key["App"].AsString, key["Icon"].AsString, latest["Date"].AsInt32, latest["Content"].AsString);
+                }).ToList()];
+                return list;
+            }
+        }
 
         public ObservableCollection<Message> Messages
         {
             get
             {
                 var query = database.Query<Message>("messages");
-                if(SelectedApp != "Latest Messages")
+                if (SelectedApp.Name != "Latest Messages")
                 {
-                    query = query.Where(x => x.App == SelectedApp);
+                    query = query.Where(x => x.App == SelectedApp.Name);
                 }
 
                 return [.. query.OrderByDescending(m => m.Date).ToList()];
@@ -44,15 +58,15 @@ namespace Shirase.ViewModels
                 {
                     return;
                 }
-                
+
                 _selectedMessage = value;
                 OnPropertyChanged(nameof(SelectedMessage));
             }
         }
 
-        private string _selectedApp = "Latest Messages";
+        private App _selectedApp = new("Latest Messages", "", 0, "");
 
-        public string SelectedApp
+        public App SelectedApp
         {
             get => _selectedApp;
             set
@@ -65,24 +79,13 @@ namespace Shirase.ViewModels
                 _selectedApp = value;
                 OnPropertyChanged(nameof(SelectedApp));
                 OnPropertyChanged(nameof(Messages));
-
-                var allMessages = LoadSavedMessages();
-                Messages.Clear();
-                foreach (var item in allMessages)
-                {
-                    if (_selectedApp != "Latest Messages" && item.App != _selectedApp)
-                    {
-                        continue;
-                    }
-
-                    Messages.Add(item);
-                }
             }
         }
 
         private readonly LocalDatabase database = new();
 
-        public MessagePageViewModel() {
+        public MessagePageViewModel()
+        {
         }
 
         private static async Task<List<Message>> LoadNewMessages(string secret, string deviceId)
@@ -92,42 +95,20 @@ namespace Shirase.ViewModels
             return response.Messages;
         }
 
-        private List<Message> LoadSavedMessages()
-        {
-            return [.. database.GetAll<Message>("messages").OrderByDescending(m => m.Date)];
-        }
-
-        public async void LoadMessages(string secret, string deviceId)
+        public async void SyncMessages(string secret, string deviceId)
         {
             try
             {
                 var newMessages = await LoadNewMessages(secret, deviceId);
-                var oldMessages = LoadSavedMessages();
-
-                if (newMessages?.Count > 0) {
+                if (newMessages?.Count > 0)
+                {
                     database.InsertBulk("messages", newMessages);
-                    
+
                     var messageId = newMessages.Max((message) => message.Id);
 
                     var response = await Pushover.Client.MessageDelete(secret, deviceId, messageId);
 
-                    Debug.WriteLine(response.ToString());
-                }
-
-                var allMessages = LoadSavedMessages();
-                foreach (var item in allMessages.GroupBy(m => m.App))
-                {
-                    AppLatestMessages.Add(item.First());
-                }
-
-                foreach (var item in allMessages)
-                {
-                    if(_selectedApp != "Latest Messages" && item.App != _selectedApp)
-                    {
-                        continue;
-                    }
-
-                    Messages.Add(item);
+                    OnPropertyChanged(nameof(Messages));
                 }
             }
             catch (Exception ex)
@@ -136,11 +117,26 @@ namespace Shirase.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
+        protected virtual void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public class App
+    {
+        public readonly string Name;
+        public readonly string Icon;
+        public readonly int Date;
+
+        public readonly string LatestMessage;
+
+        public App(string name, string icon, int date, string latestMessage)
+        {
+            Name = name;
+            Icon = icon;
+            Date = date;
+            LatestMessage = latestMessage;
         }
     }
 }

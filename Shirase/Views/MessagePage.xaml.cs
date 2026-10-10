@@ -50,8 +50,6 @@ namespace Shirase.Views
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            ViewModel.LoadMessages(App.SessionService.Secret, App.SessionService.DeviceId);
-
             Debug.WriteLine("Websocket connecting");
             ConnectWebsocket();
         }
@@ -92,10 +90,7 @@ namespace Shirase.Views
                     }
                 case Event.NewMessage:
                     {
-                        string secret = App.SessionService.Secret;
-                        string deviceId = App.SessionService.DeviceId;
-
-                        ViewModel.LoadMessages(secret, deviceId);
+                        ViewModel.SyncMessages(App.SessionService.Secret, App.SessionService.DeviceId);
                         break;
                     }
                 case Event.ReloadRequest:
@@ -120,15 +115,6 @@ namespace Shirase.Views
 
         public void Dispose()
         {
-        }
-
-
-        private void nvAppList_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            if(args.SelectedItem is Message item)
-            {
-                ViewModel.SelectedApp = item.App;
-            }
         }
     }
 }
