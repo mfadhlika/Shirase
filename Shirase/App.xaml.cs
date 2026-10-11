@@ -7,22 +7,14 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using Shirase.Pushover;
 using Shirase.Pushover.Models;
 using Shirase.Services;
 using Shirase.Views;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Background;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -77,7 +69,54 @@ namespace Shirase
             string secret = SessionService.Secret;
             string deviceId = SessionService.DeviceId;
 
-            m_window.Activate();
+            AppNotificationManager.Default.NotificationInvoked += OnNotificationInvoked;
+            AppNotificationManager.Default.Register();
+
+            var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+
+            if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
+            {
+                // App was launched by clicking a notification
+                var notificationArgs = (AppNotificationActivatedEventArgs)activatedArgs.Data;
+                HandleNotification(notificationArgs);
+            }
+            else
+            {
+                // Normal launch
+                m_window.Activate();
+            }
+        }
+
+        private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+        {
+            HandleNotification(args);
+        }
+
+        private void HandleNotification(AppNotificationActivatedEventArgs args)
+        {
+            var action = args.Arguments.ContainsKey("action") ? args.Arguments["action"] : "(none)";
+            var messageId = args.Arguments.ContainsKey("messageId") ? args.Arguments["messageId"] : "(none)";
+
+            m_window!.DispatcherQueue.TryEnqueue(() =>
+            {
+                switch (action)
+                {
+                    case "BackgroundAction":
+                        // Handle the action without showing the app window.
+                        // If the window was never shown, exit the app.
+                        if (!m_window.Visible)
+                        {
+                            Application.Current.Exit();
+                        }
+                        break;
+
+                    default:
+                        // Bring the app to the foreground and display the notification arguments.
+                        m_window.Activate();
+                        ((MainWindow)m_window).GetRootFrame().Navigate(typeof(MessagePage), args.Arguments);
+                        break;
+                }
+            });
         }
 
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)

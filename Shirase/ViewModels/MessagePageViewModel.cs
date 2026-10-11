@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using Shirase.Common;
 using Shirase.Pushover.Models;
 using System;
@@ -109,6 +111,25 @@ namespace Shirase.ViewModels
                     var response = await Pushover.Client.MessageDelete(secret, deviceId, messageId);
 
                     OnPropertyChanged(nameof(Messages));
+                }
+
+                foreach (var item in newMessages)
+                {
+                    var builder = new AppNotificationBuilder().AddText(item.Content).AddArgument("messageId", item.IdStr);
+
+                    if (item.Title != null)
+                    {
+                        builder.AddText(item.Title);
+                    }
+
+                    if (item.Url != null)
+                    {
+                        var text = item.UrlTitle ?? "Open URL";
+                        builder.AddButton(new AppNotificationButton(text).AddArgument("action", "openUrl").AddArgument("url", item.Url));
+                    }
+
+                    var notification = builder.BuildNotification();
+                    AppNotificationManager.Default.Show(notification);
                 }
             }
             catch (Exception ex)

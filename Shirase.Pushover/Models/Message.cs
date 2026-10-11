@@ -47,5 +47,20 @@ namespace Shirase.Pushover.Models
 
         [JsonPropertyName("title")]
         public string Title { get; set; }
+
+        [JsonPropertyName("sound")]
+        public string Sound { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("url_title")]
+        public string UrlTitle { get; set; }
+
+        [JsonPropertyName("receipt")]
+        public int Receipt { get; set; }
+
+        [JsonPropertyName("html")]
+        public int Html { get; set; }
     }
 }

@@ -5,6 +5,8 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   IgnorableNamespaces="uap rescap">
 
 	<Identity
@@ -43,11 +45,19 @@
 				<uap:SplashScreen Image="Assets\SplashScreen.png" />
 			</uap:VisualElements>
 			<Extensions>
-				<Extension Category="windows.backgroundTasks" EntryPoint="Shirase.Tasks.RealTimeNotificationTask">
-					<BackgroundTasks>
-						<Task Type="systemEvent"/>
-					</BackgroundTasks>
-				</Extension>
+				<!--Specify which CLSID to activate when notification is clicked-->
+				<desktop:Extension Category="windows.toastNotificationActivation">
+					<desktop:ToastNotificationActivation ToastActivatorCLSID="87F9D98A-679D-4F99-B432-CD2AFD7AA9E9" />
+				</desktop:Extension>
+
+				<!--Register COM CLSID-->
+				<com:Extension Category="windows.comServer">
+					<com:ComServer>
+						<com:ExeServer Executable="Shirase.exe" DisplayName="Shirase" Arguments="----AppNotificationActivated:">
+							<com:Class Id="87F9D98A-679D-4F99-B432-CD2AFD7AA9E9" />
+						</com:ExeServer>
+					</com:ComServer>
+				</com:Extension>
 			</Extensions>
 		</Application>
 	</Applications>

@@ -83,7 +83,6 @@ namespace Shirase.Pushover
         public static async Task<MessageDownloadResponse> MessageDownload(string secret, string deviceId)
         {
             var response = await _client.GetAsync($"https://api.pushover.net/1/messages.json?secret={secret}&device_id={deviceId}");
-
             return await response.Content.ReadFromJsonAsync<MessageDownloadResponse>();
         }
 

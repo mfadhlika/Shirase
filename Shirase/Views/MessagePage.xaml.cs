@@ -46,12 +46,18 @@ namespace Shirase.Views
             this.InitializeComponent();
 
             progress = new Progress<Event>(OnPushoverMessage);
+            ConnectWebsocket();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Debug.WriteLine("Websocket connecting");
-            ConnectWebsocket();
+            if (e.Parameter is IDictionary<string, string> args)
+            {
+                if (args.TryGetValue("messageId", out string messageId))
+                {
+                    ViewModel.SelectedMessage = ViewModel.Messages.First(m => m.IdStr == messageId);
+                }
+            }
         }
 
         private void ConnectWebsocket()
