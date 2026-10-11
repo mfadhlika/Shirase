@@ -48,7 +48,7 @@
     <ProjectReference Include="..\Shirase.Pushover\Shirase.Pushover.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\TrayIcon.xaml">
+    <Page Update="Views\TrayIconControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -45,8 +45,11 @@ namespace Shirase
 
             m_window.Closed += (sender, args) =>
             {
-                args.Handled = true;
-                m_window.Hide();
+                if (HandleClosedEvents)
+                {
+                    args.Handled = true;
+                    m_window.Hide();
+                }
             };
 
             Frame rootFrame = ((MainWindow)m_window).GetRootFrame();
@@ -132,6 +135,8 @@ namespace Shirase
                 return m_window;
             }
         }
+
+        public static bool HandleClosedEvents { get; set; } = true;
 
         static SessionService? sessionService;
 
