@@ -57,6 +57,17 @@ namespace Shirase.Views
                 {
                     ViewModel.SelectedMessage = ViewModel.Messages.First(m => m.IdStr == messageId);
                 }
+                else if (args.TryGetValue("action", out string action))
+                {
+                    switch(action)
+                    {
+                        case "openUrl":
+                            {
+                                _ = Windows.System.Launcher.LaunchUriAsync(new Uri(args["url"]));
+                                break;
+                            }
+                    }
+                }
             }
         }
 
