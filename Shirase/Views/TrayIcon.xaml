@@ -10,13 +10,7 @@
     mc:Ignorable="d">
 
     <tb:TaskbarIcon
-    ToolTipText="Shirase"
-    LeftClickCommand="{x:Bind ShowWindowCommand}">
-        <tb:TaskbarIcon.IconSource>
-            <tb:GeneratedIconSource
-            Text="❤️"
-            Foreground="Red"
-        />
-        </tb:TaskbarIcon.IconSource>
-    </tb:TaskbarIcon>
+        ToolTipText="Shirase"
+        LeftClickCommand="{x:Bind ShowWindowCommand}"
+        IconSource="/Assets/Shirase.ico"/>
 </UserControl>
